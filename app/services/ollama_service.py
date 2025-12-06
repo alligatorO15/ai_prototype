@@ -56,6 +56,10 @@ class OllamaService:
                 
                 result=response.json()
                 generate_text = result.get("message, {}").get("content", "")
+                
+                logger.info(f"Ответ LLM успешно сгенерирован: {generate_text}[:100]...")
+                return generate_text
+            
         except httpx.TimeoutException:
             logger.error("Превышено время ожидания чата Ollama")
             raise RuntimeError("Превышено время ожидания чата Ollama")
@@ -66,14 +70,14 @@ class OllamaService:
             logger.error(f"Ошибка чата Ollama {e}")
             raise
         
-        async def is_available() -> bool:
-            """Проверка состояния. Если смогли получить список моделей то работает"""
-            try:
-                async with httpx.AsyncClient(timeout=5) as client:
-                    response= await client.get(f"{self.base_url}/api/tags")
-                    return response.status_code == 200
-            except Exception:
-                return False
+    async def is_available(self) -> bool:
+        """Проверка состояния. Если смогли получить список моделей то работает"""
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                response= await client.get(f"{self.base_url}/api/tags")
+                return response.status_code == 200
+        except Exception:
+            return False
             
 def get_ollama_service() -> OllamaService:
     """Для создания или получения 1 и того же экземпляра сервисма Ollama"""
