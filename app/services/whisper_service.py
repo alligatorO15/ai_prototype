@@ -62,7 +62,7 @@ class WhisperService:
                 language = language,
                 beam_size = 5,#что-то про лучевой поиск(чем больше тем точнее, но медленнее)
                 vad_filter = True, #фильтровать шум и тищину
-                vad_parameters=dict(min_silence_duration_ms = 500,), # интервал в мс, превысив который распознает как паузу
+                vad_parameters={"min_silence_duration_ms": 500}, # интервал в мс, превысив который распознает как паузу
             )
             
             text_parts = []
