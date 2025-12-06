@@ -6,7 +6,7 @@ import httpx
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
-_ollama_service = Optional["OllamaService"] = None
+_ollama_service: Optional["OllamaService"] = None
 
 class OllamaService:
     """
@@ -18,7 +18,7 @@ class OllamaService:
         self.settings = get_settings()
         self.base_url = self.settings.ollama_base_url
         self.model = self.settings.ollama_model
-        self.timout = self.settings.olleme_timeout
+        self.timeout = self.settings.ollama_timeout
         
     async def chat(self, user_message: str, system_prompt: Optional[str] = None,) -> str:
         """запрос к Ollama LLM. Возвращает сгенерированный ответ текста"""
@@ -26,13 +26,12 @@ class OllamaService:
         if system_prompt is None:
             system_prompt = self.settings.system_prompt
             
-        message = []
-        message.append(
+        message = [
             {"role": "system",
              "content": system_prompt},
             {"role": "user",
              "content": user_message},
-        )
+        ]
         
         logger.info(f"Отправка сообщения  в Ollama")
         
@@ -47,7 +46,7 @@ class OllamaService:
         }
         
         try:
-            async with httpx.AsyncClient(timeout=self.timout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(
                     f"{self.base_url}/api/chat",
                     json=payload
@@ -55,7 +54,7 @@ class OllamaService:
                 response.raise_for_status()
                 
                 result=response.json()
-                generate_text = result.get("message, {}").get("content", "")
+                generate_text = result.get("message", {}).get("content", "")
                 
                 logger.info(f"Ответ LLM успешно сгенерирован: {generate_text}[:100]...")
                 return generate_text

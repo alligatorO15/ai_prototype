@@ -36,7 +36,7 @@ SUPPORTED_AUDIO_FORMATS = ('.wav') #можно потом добавить и д
 async def process_voice(
     audio: UploadFile = File(..., description="Аудиофайл WAV"),
     generate_audio: bool = Form(default=True, description = "Надо ли генерировать аудиоответ"),
-    system_prompt: bool = Form(default = None, description = "Пользовательский системный промпт"),
+    system_prompt: Optional[str] = Form(default = None, description = "Пользовательский системный промпт"),
     whisper: WhisperService = Depends(get_whisper),
     ollama: OllamaService = Depends(get_ollama),
     tts: TTSService = Depends(get_tts),
@@ -52,7 +52,7 @@ async def process_voice(
     start_time = time.time()
     settings = get_settings()
     
-    if not audio.filename.lower().endwith(SUPPORTED_AUDIO_FORMATS):
+    if not audio.filename or not audio.filename.lower().endswith(SUPPORTED_AUDIO_FORMATS):
         raise HTTPException(
             status_code=400,
             detail = f"Неподдерживаемый формат аудио. Поддерживаются {', '.join(SUPPORTED_AUDIO_FORMATS)}",
@@ -64,12 +64,13 @@ async def process_voice(
     
     if file_size > settings.max_file_size *1024 *1024:
         raise HTTPException(
-            statuse_code = 400,
+            status_code = 400,
             detail = f"Файл слишком большой. Максимальный размер: {settings.max_file_size} Mб"
         )
         
     settings.upload_dir.mkdir(parents = True, exist_ok = True)
-    temp_path = settings.upload_dir / f"temp_{uuid.uuid4().hex}{Path(audio.filename).suffix}" #потому что faster-whisper работает с файлом на диске, а не с переданными байтами в памяти.
+    file_suffix = Path(audio.filename).suffix if audio.filename else ".wav"
+    temp_path = settings.upload_dir / f"temp_{uuid.uuid4().hex}{file_suffix}" #потому что faster-whisper работает с файлом на диске, а не с переданными байтами в памяти.
     
     try:
         with open(temp_path, "wb") as f:
@@ -114,16 +115,16 @@ async def process_voice(
                 
                 audio_url = f"/voice/audio/{audio_filename}"
             except Exception as e:
-                logger.error(f"Ошибка синеза речи: {e}")
-                
-            processing_time = time.time() - start_time
-            
-            return VoiceAssistantResponse(
-                transcription=text,
-                llm_response=llm_response,
-                audio_url=audio_url,
-                processing_time=round(processing_time,2)
-            )
+                logger.error(f"Ошибка синтеза речи: {e}")
+        
+        processing_time = time.time() - start_time
+        
+        return VoiceAssistantResponse(
+            transcription=text,
+            llm_response=llm_response,
+            audio_url=audio_url,
+            processing_time=round(processing_time,2)
+        )
             
     finally:
         if temp_path.exists():
@@ -145,7 +146,8 @@ async def transcribe_audio(
     
     settings = get_settings()
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
-    temp_path= settings.upload_dir / f"temp_{uuid.uuid4().hex}{Path(audio.filename).suffix}"
+    file_suffix = Path(audio.filename).suffix if audio.filename else ".wav"
+    temp_path= settings.upload_dir / f"temp_{uuid.uuid4().hex}{file_suffix}"
     
     try:
         with open(temp_path,"wb") as f:
@@ -211,7 +213,7 @@ async def synthesize_speech(
 ):
     """Преобразование текста в речь"""
     try:
-        audio_path = tts.synthesize(text=text, lamguage=language)
+        audio_path = tts.synthesize(text=text, language=language)
         return FileResponse(
             path=str(audio_path),
             media_type="audio/mpeg",

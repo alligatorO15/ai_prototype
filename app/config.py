@@ -4,9 +4,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Настройки приложения.Загружаются из переменных окружения
+    """Настройки приложения. Загружаются из переменных окружения
     """
-    app_name:str = ' Голосовой AI-ассистент'
+    app_name:str = 'Голосовой AI-ассистент'
     debug: bool = False
 
     whisper_model_size: str = 'base'
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     system_prompt: str = """Ты вежливы и полезный AI-ассистент. Отвечай на русском, кратко и по существу. Будь вежливым"""
     
 @lru_cache
-def get_settigs() -> Settings:
-    """Получаем кэшируемый экзмепляр настроек с помощью декоратора lru_cache"""
+def get_settings() -> Settings:
+    """Получаем кэшируемый экземпляр настроек с помощью декоратора lru_cache"""
     return Settings()
      

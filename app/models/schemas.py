@@ -20,12 +20,7 @@ class LLMResponse(BaseModel):
     response:str = Field(..., description="Сгененрированный текст ответа")
     model: str = Field(..., description="Используемая модель")
     
-    
-class VoiceAssistantRequest(BaseModel):
-    """Параметры запроса к голосовому ассистенту"""
-    
-    generate_audio: bool = Field(default=True, description="Надо ли генерировать аудио-ответ")
-    system_prompt: Optional[str] = Field(default=None, description="Польовательский сиситемный промпт")
+
     
     
 class VoiceAssistantResponse(BaseModel):

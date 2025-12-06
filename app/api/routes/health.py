@@ -28,5 +28,8 @@ async def health_check(
     all_healthy = whisper.is_loaded and ollama_available and tts_available
     
     return HealthResponse(
-        status = "healthy" if  (whisper)
+        status = "healthy" if all_healthy else "unhealthy",
+        whisper_loaded = whisper.is_loaded,
+        ollama_available = ollama_available,
+        tts_available = tts_available
     )

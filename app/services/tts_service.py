@@ -34,7 +34,7 @@ class TTSService:
             language = self.language
             
         if filename is None:
-            filename = f"tts_{uuid.uiid4().hex[:8]}.mp3"
+            filename = f"tts_{uuid.uuid4().hex[:8]}.mp3"
             
         output_path = self.output_dir / filename
         

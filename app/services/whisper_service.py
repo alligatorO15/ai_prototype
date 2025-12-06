@@ -16,7 +16,7 @@ class WhisperService:
     _instance: Optional["WhisperService"]=None #Форвардссылка так как на тот момент когда читает строку  класс еще не созд
     _model: Optional[WhisperModel] = None
     
-    def __new__(cls) -> WhisperModel:
+    def __new__(cls) -> "WhisperService":
         """Синглтон паттерн так как модель whisper очень тяжелая.
         Чтобы при Whisper() возвращался 1 и тот же экземпляр"""
         
@@ -67,7 +67,7 @@ class WhisperService:
             
             text_parts = []
             for segment in segments:
-                text_parts=text_parts.append(segment.text.strip())
+                text_parts.append(segment.text.strip())
             
             full_text=" ".join(text_parts)
             
@@ -80,11 +80,11 @@ class WhisperService:
     def is_loaded(self) -> bool:
         return self._model is not None
     
-    def get_whisper_service() -> WhisperModel:
-        """Для создания или получения 1 и того же экземпляра Whisper. 
-        Тоже как синглтон паттерн контролирует чтобы был 1 экземпляр. 
-        Именно этот метод будем использовать для DI"""
-        global _whisper_service
-        if _whisper_service is None:
-            _whisper_service = WhisperService()
-            return _whisper_service
+def get_whisper_service() -> WhisperService:
+    """Для создания или получения 1 и того же экземпляра Whisper. 
+    Тоже как синглтон паттерн контролирует чтобы был 1 экземпляр. 
+    Именно этот метод будем использовать для DI"""
+    global _whisper_service
+    if _whisper_service is None:
+        _whisper_service = WhisperService()
+    return _whisper_service
